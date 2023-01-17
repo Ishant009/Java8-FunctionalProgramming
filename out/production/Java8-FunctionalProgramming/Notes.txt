@@ -1,0 +1,143 @@
+Functional Programming :- what to do
+Stream -> Sequnce of elements and what should be done for each element
+
+Methods--
+filter  -> Allow to specify condition, if true only those value go through which satisfy condition.
+
+map     -> Convert/map one value to another.
+
+forEach -> To consume/use each value.
+           numbers.stream().filter(ClassName::methodname).forEach(System.out::println);
+
+
+Reduce  -> Perform Reduction on values
+           numbers.stream().reduce(0,(x,y)->x+y);
+           numbers.stream().map(x->x*x*x).reduce(0,Integer::sum);
+           numbers.stream().filter(x->x%2!=0).reduce(0,Integer::sum);
+
+Distinct -> Used to get Unique values.
+            numbers.stream().distinct().forEach(System.out::println);
+
+Sorted  -> Used to sort the list.
+           numbers.stream().sorted().forEach(System.out::println);
+
+Comperator -> Comparator interface is used to order the objects of user-defined classes.
+              courses.stream().sorted(Comparator.reverseOrder()).forEach(System.out::println);
+              courses.stream().sorted(Comparator.comparing(str->str.length())).forEach(System.out::println);
+
+Collect -> Used to generate list from another list in stream.(may not be list)
+            numbers.stream().map(number->number*number).collect(Collectors.toList());
+
+FunctionalInterfaces :-
+
+Predicate -> Represent a predicate (boolean-valued function) of one argument.
+            Filter uses predicate(condition)
+            Predicate<Integer> isEvenPredicate = x -> x % 2 == 0;
+
+Function -> Represent a function that accept one argument and produce a result.
+            Map uses function.
+            Function<Integer, Integer> squareFunction = x -> x * x;
+
+Consumer -> Represent an operation that accepts a single input argument and return no result.
+            forEach uses consumer.
+            Consumer<Integer> println = System.out::println;
+
+Behind each lambda function there is a functional interface. Method inside functional interface is called function descriptor.
+
+Behaviour Parameterization: -> Instead of passing variable pass behaviour of function.
+
+        filterAndPrint(numbers, x->x%3==0);
+        private static void filterAndPrint(List<Integer> numbers, Predicate<Integer> predicate) {
+                numbers.stream().filter(predicate).forEach(System.out::println);
+            }
+
+Suplier -> Don't have any input but return something back; eg-> create object of something..
+        Supplier<Integer> randomIntegerSupplier = () -> (int) (Math.random() * 100);
+
+Bi-Predicate -> when you have 2 input to lambda expression and return type boolean.
+                BiPredicate<Integer, String> biPredicate = (number, str) -> {
+                            return (number < 10 && str.length() > 5);
+                        };
+Bi-Function -> when you have 2 input to lambda expression and return type can be anything.
+            BiFunction<Integer, String, String> biFunction = (number, str) -> {
+                        return number + str;
+                    };
+
+Bi-Consumer -> when you have 2 input and no return type.
+
+When we have wrapper call autoboxing occure. so use premitivefunctioninterfaces.
+
+IntBinaryOperator -> IntBinaryOperator intBinaryOperator =(x,y)-> x+y;
+IntConsumer
+IntFunction
+IntPredicate
+IntSupplier
+IntToDoubleFunction
+IntToLongFunctioon
+IntUnaryOperator
+
+
+Operation on Stream :---
+
+allMatch  ->  all element of list match the predicate
+noneMatch ->  no element of list match the predicate
+anyMatch  ->  if any element match the predicate
+
+Comparator :--
+            Comparator<Course> comparingByNoOfStudentAndNoOfReviews = Comparator.comparing(Course::getNoOfStudents).thenComparing(Course::getReviewScore);
+            System.out.println(courses.stream().sorted(comparingByNoOfStudentAndNoOfReviews));
+
+Skip & Limit :--
+             System.out.println(courses.stream().sorted(comparingByNoOfStudentAndNoOfReviews).limit(5).collect(Collectors.toList()));
+             System.out.println(courses.stream().sorted(comparingByNoOfStudentAndNoOfReviews).skip(3).collect(Collectors.toList()));
+
+takewhile   :-- execute until criteria is met.
+            courses.stream().takeWhile(course-> course.getReviewScore()>=95).collect(Collectors.toList());
+
+dropWhile   :-- keep checking all element but skip those element whose criteria not met.
+            courses.stream().takeWhile(course -> course.getReviewScore() >= 95).collect(Collectors.toList());
+            courses.stream().dropWhile(course -> course.getReviewScore() >= 95).collect(Collectors.toList());
+
+Max        :-  It return the last element based on comparator.
+                courses.stream().max(comparingByNoOfStudentAndNoOfReviews));
+                courses.stream().min(comparingByNoOfStudentAndNoOfReviews).orElse(new Course("Kubernetes", "Cloud", 91, 20000))
+
+findFirst & findAny :-  used to pick one element based on defined criteria.
+
+Sum, average, count:-
+        courses.stream().filter(course -> course.getReviewScore() > 95).mapToInt(Course::getNoOfStudents).sum();
+        courses.stream().filter(course -> course.getReviewScore() > 95).mapToInt(Course::getNoOfStudents).average();
+        courses.stream().filter(course -> course.getReviewScore() > 95).mapToInt(Course::getNoOfStudents).count();
+
+Groupingby :-  change to map and group by on key.
+            courses.stream().collect(Collectors.groupingBy(Course::getCategory,Collectors.counting()));
+
+
+
+
+Stream for permitives ---->
+
+int[] numberArray = {12,9,12,4,2,6};
+Arrays.stream(numberArray);
+
+IntStream.range(1,10).sum()
+IntStream.iterate(1,e->e+2).limit(10).peek(System.out::println).sum()
+
+IntStream.iterate(2,e->e+2).limit(10).peek(System.out::println).sum()
+IntStream.iterate(2,e->e+2).limit(10).boxed().collect(Collectors.toList());
+
+For large variable calculation:--
+ LongStream.rangeClosed(1,40).reduce(1,(x,y)->x*y);
+ LongStream.rangeClosed(1,40).mapToObj(BigInteger::valueOf).reduce(BigInteger.ONE,BigInteger::multiply);
+
+String and FlatMap :--
+
+   List <String> courseStr= List.of("Spring","Spring Boot", "API","AWS","PCF");
+    List <String> courseStr1= List.of("Spring","Spring Boot", "API","AWS","PCF");
+    courseStr.stream().collect(Collectors.joining(" ,"))
+
+"Spring".split("")
+
+courseStr.stream().map(course->course.split("")).flatMap(Arrays::stream).collect(Collectors.toList());
+    courseStr.stream().map(course->course.split("")).flatMap(Arrays::stream).distinct().collect(Collectors.toList())
+    courseStr.stream().flatMap(course -> courseStr1.stream().filter(course2->course2.length()==course.length()).map(course2-> List.of(course, course2))).filter(list-> !list.get(0).equals(list.get(1))).collect(Collectors.toList())
